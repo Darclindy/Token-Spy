@@ -1,5 +1,5 @@
 from sdk.cmc.crypto_currency.CryptoCurrency import CRYPTO_CURRENCY_API
-from sdk.helius.Transaction import transaction_history_test
+from sdk.helius.Transaction import *
 from dune_client.client import DuneClient
 import Constant
 import json
@@ -17,6 +17,7 @@ def main():
 
 def test():
     print("hello token-spy, this is a setup test!!!")
+    get_all_transaction("F82BqR5GqmVkc1X58WsnEPeTqVAvgk3tAavtmpoiw7PM")
     
 
 def test_dune():
@@ -31,6 +32,7 @@ def test_cmc():
 
 def test_helius():
     transaction_history_test()
+    # transaction_test()
 
 
 
