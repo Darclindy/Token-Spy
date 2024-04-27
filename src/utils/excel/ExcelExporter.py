@@ -1,27 +1,42 @@
 import pandas as pd
+from transaction.Account import Account
+from utils.out import write_to_file
+import json
+import numpy as np
 
 class ExcelExporter:
-    def __init__(self, dataframe, filename='output.xlsx'):
-        """
-        初始化ExcelExporter对象。
 
-        参数:
-            dataframe (pandas.DataFrame): 要导出的数据帧。
-            filename (str): 输出文件的名称，默认为'output.xlsx'。
-        """
-        self.dataframe = dataframe
-        self.filename = filename
+    @staticmethod
+    def export_account(account: Account):
+        data = account.to_dict()
+        # 从输入的json数据中提取需要的信息
+        data_dict = {}
+        for token, token_data in data['token'].items():
+            for model in token_data['models']:
+                if token not in data_dict:
+                    data_dict[token] = []
+                data_dict[token].append(model['price'])
+                data_dict[token].append(model['count'],)
+                data_dict[token].append(model['action'])
+                data_dict[token].append(model['timestamp'])
 
-    def export(self):
-        """
-        将数据帧导出到Excel文件。
-        """
-        try:
-            # 使用to_excel方法将DataFrame写入Excel文件
-            self.dataframe.to_excel(self.filename, index=False)
-            print(f"Data exported successfully to {self.filename}")
-        except Exception as e:
-            print(f"Failed to export data: {e}")
+        write_to_file("test.json" ,json.dumps(data_dict))
+
+
+        # 创建一个空的dataframe
+        df = pd.DataFrame(columns=data_dict.keys()).astype('object')
+
+        for mint, values in data_dict.items():
+            for index in range(len(values)):
+                # df.at[index] = {mint: str(values[index])}
+                df.loc[index, mint] = str(values[index])
+
+
+        # 保存为.xlsx文件
+        df.to_excel('output.xlsx')
+
+
+
 
 # 使用示例
 if __name__ == "__main__":
@@ -36,3 +51,10 @@ if __name__ == "__main__":
     # 创建ExcelExporter对象并导出数据
     exporter = ExcelExporter(dataframe=df)
     exporter.export()
+
+    # 创建一个示例三维列表
+    data_3d = [[[i + j + k for k in range(5)] for j in range(5)] for i in range(5)]
+    
+    # 导出三维列表
+    exporter_3d = ExcelExporter(filename='output_3d.xlsx')
+    exporter_3d.export_3d(data_3d)

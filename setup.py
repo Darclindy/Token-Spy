@@ -12,7 +12,8 @@ setup(
         'numpy==1.26.4',
         'dune_client==1.5.1',
         'helius==0.0.3',
-        'python-dotenv==1.0.1'
+        'python-dotenv==1.0.1',
+        "openpyxl"
     ],
     entry_points={
         'console_scripts': [

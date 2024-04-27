@@ -1,6 +1,9 @@
 from sdk.cmc.crypto_currency.CryptoCurrency import CRYPTO_CURRENCY_API
 from sdk.helius.Transaction import *
 from dune_client.client import DuneClient
+from transaction.Transaction import TransactionModel
+from transaction.Account import Account
+from utils.excel.ExcelExporter import ExcelExporter
 import Constant
 import json
 
@@ -14,10 +17,25 @@ def main():
         fs.write(json.dumps(result))
     print(result)
 
+def test_transaction():
+    signature = ["xof911A5xUMteYD4ibJrGJe29iMMyRS2LJABUvCrrwVRsFZmtH9iWyDWpDodtojNyrqY8bioX86oQ1Z7Dp8i9HK"]
+    address = "5tzFkiKscXHK5ZXCGbXZxdw7gTjjD1mBwuoFbhUvuAi9"
+    # transaction = get_all_transaction(address = address)
+    transaction = transaction_history_test(address = address)
+    model = TransactionModel.parse_transfers(transaction, address)
+    account = Account(address)
+    account.add_model_list(model)
+    ExcelExporter.export_account(account)
+
+    print(account)
+    
+    # account.write_to_excel()
+
 
 def test():
     print("hello token-spy, this is a setup test!!!")
-    get_all_transaction("F82BqR5GqmVkc1X58WsnEPeTqVAvgk3tAavtmpoiw7PM")
+    # get_all_transaction("F82BqR5GqmVkc1X58WsnEPeTqVAvgk3tAavtmpoiw7PM")
+    test_transaction()
     
 
 def test_dune():
@@ -31,11 +49,11 @@ def test_cmc():
     print(result)
 
 def test_helius():
-    transaction_history_test()
+    transaction_history_test(address = "F82BqR5GqmVkc1X58WsnEPeTqVAvgk3tAavtmpoiw7PM")
     # transaction_test()
 
 
 
 if __name__ == "__main__":
-    main()
+    test_transaction()
 

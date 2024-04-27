@@ -11,21 +11,23 @@ transaction_type = {"transfer":"TRANSFER", "swap": "SWAP"}
 def transaction_test():
     transactions = ["WhEairASuHdDZp6pQJGBH85dCReskiCpHRFKSEKQh7wcBEBAHmAGcaDrBikJokH2B63xGLJrhvPMJfXpZuwJjqw"]
     raw_transactions = TransactionsAPI.get_parsed_transactions(transactions = transactions )
-    write_to_file(f"output/json/transaction/{transactions[0]}.json", json.dumps(raw_transactions))
+    write_to_file(f"json/transaction/{transactions[0]}.json", json.dumps(raw_transactions))
 
     print(raw_transactions)
+    return raw_transactions
 
-def transaction_history_test():
-    address = "F82BqR5GqmVkc1X58WsnEPeTqVAvgk3tAavtmpoiw7PM"
+def transaction_history_test(address):
     parsed_transaction_history = TransactionsAPI.get_parsed_transaction_history(address=address, type=transaction_type.values())
-    write_to_file(f"output/json/history/{address}.json", json.dumps(parsed_transaction_history))
+    write_to_file(f"json/history/{address}.json", json.dumps(parsed_transaction_history))
     print(parsed_transaction_history)
+    return parsed_transaction_history
 
 
-def get_all_transaction(address, signature = "", type = transaction_type.values()):
-    last_signature = "PToU9AtpEJiduqZXEPjGqP9LWkinCkwokEusBppz7ZUPjHU2rbKuo2QW7wfzkh8Js2agAv25buSz3qS1ussQxdp"
+def get_all_transaction(address, signature = None, type = transaction_type.values()):
+    # last_signature = "PToU9AtpEJiduqZXEPjGqP9LWkinCkwokEusBppz7ZUPjHU2rbKuo2QW7wfzkh8Js2agAv25buSz3qS1ussQxdp"
+    last_signature = signature
     transactions = []
-    for j in range(3):
+    for j in range(10):
         try:
             parsed_transaction = TransactionsAPI.get_parsed_transaction_history(address=address, before=last_signature, type=type)
             size = len(parsed_transaction)
@@ -43,8 +45,8 @@ def get_all_transaction(address, signature = "", type = transaction_type.values(
             else:
                 print("unkown error, try skip:" + message)
 
-    write_to_file(f"output/json/history/{address}.json", json.dumps(transactions))
-
+    write_to_file(f"json/history/{address}.json", json.dumps(transactions))
+    return transactions
     # with open(f"output/json/history/{address}", "w") as fp:
     #     fp.write(json.dumps(transactions))
 
