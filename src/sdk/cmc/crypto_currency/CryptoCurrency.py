@@ -59,8 +59,8 @@ class CryptoCurrencyAPI:
         path = "/v3/cryptocurrency/quotes/historical"
         parameters = {
             "symbol":"WIF",
-            "count":1000,
-            "interval":"5m"
+            "count":1,
+            "interval":"5m",
         }
 
         parameters.update(params)

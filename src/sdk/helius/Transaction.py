@@ -19,7 +19,7 @@ def transaction_test():
 def transaction_history_test(address):
     parsed_transaction_history = TransactionsAPI.get_parsed_transaction_history(address=address, type=transaction_type.values())
     write_to_file(f"json/history/{address}.json", json.dumps(parsed_transaction_history))
-    print(parsed_transaction_history)
+    # print(parsed_transaction_history)
     return parsed_transaction_history
 
 

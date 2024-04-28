@@ -1,4 +1,5 @@
 from sdk.cmc.crypto_currency.CryptoCurrency import CRYPTO_CURRENCY_API
+from sdk.cmc.crypto_currency.HistoryCurrencyPresenter import fetch_price
 from sdk.helius.Transaction import *
 from dune_client.client import DuneClient
 from transaction.Transaction import TransactionModel
@@ -23,6 +24,7 @@ def test_transaction():
     # transaction = get_all_transaction(address = address)
     transaction = transaction_history_test(address = address)
     model = TransactionModel.parse_transfers(transaction, address)
+
     account = Account(address)
     account.add_model_list(model)
     ExcelExporter.export_account(account)
@@ -45,8 +47,15 @@ def test_dune():
 
 
 def test_cmc():
-    result = CRYPTO_CURRENCY_API.quotes_historical(params={"symbol":"BTC"})
-    print(result)
+    print(fetch_price("ETH", "2024-04-15T07:33:33.000Z"))
+    # result = CRYPTO_CURRENCY_API.quotes_historical(params={
+    #     "symbol":"ETH",            
+    #     "time_end":"2024-04-15T07:33:33.000Z",
+    #     "count":2,
+    #     "interval":"5m",
+    #     })
+    
+    # write_to_file(f"json/price/eth.json", json.dumps(result))
 
 def test_helius():
     transaction_history_test(address = "F82BqR5GqmVkc1X58WsnEPeTqVAvgk3tAavtmpoiw7PM")

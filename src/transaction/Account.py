@@ -2,7 +2,6 @@ from transaction.enums import Chain
 from transaction.Token import Token
 from transaction.Transaction import TransactionModel
 from utils.out import write_to_file
-# from utils.excel.ExcelExporter import ExcelExporter
 import json
 
 class Account:
@@ -44,25 +43,6 @@ class Account:
         write_to_file(f"json/account/{self.address}.json", json.dumps(self.to_dict()))
         print(f"{self.address} dump finshed.")
 
-    # def write_to_excel(self):
-    #     ExcelExporter.export_account(self)
-        # data = self.to_dict()
-
-        # # 提取数据并转换为三维列表
-        # data_3d = []
-        # for token, token_data in data['token'].items():
-        #     for model in token_data['models']:
-        #         data_3d.append([
-        #             [model['price']],
-        #             [model['count']],
-        #             [model['action']],
-        #             [model['timestamp']]
-        #         ])
-
-        # print(data_3d)
-        
-        # exporter = ExcelExporter(filename = f"output/excel/{self.address}.xlsx")
-        # exporter.export_3d(data_3d)
         
 
 

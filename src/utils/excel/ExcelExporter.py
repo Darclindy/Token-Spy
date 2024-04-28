@@ -1,5 +1,6 @@
 import pandas as pd
 from transaction.Account import Account
+from sdk.helius.Metadata import get_token_symbols
 from utils.out import write_to_file
 import json
 import numpy as np
@@ -22,18 +23,30 @@ class ExcelExporter:
 
         write_to_file("test.json" ,json.dumps(data_dict))
 
+        column = data_dict.keys()
 
         # 创建一个空的dataframe
-        df = pd.DataFrame(columns=data_dict.keys()).astype('object')
+        df = pd.DataFrame(columns=column).astype('object')
+
+        tmp_list = list(column)
+        sol_index = tmp_list.index("SOLANA")
+        tmp_list.remove("SOLANA")
+
+        symbols = get_token_symbols(tmp_list)
+
+        if (sol_index >= 0):
+            symbols.insert(sol_index, "SOLANA")
+
+
+        df.loc[len(df)] = symbols
 
         for mint, values in data_dict.items():
             for index in range(len(values)):
-                # df.at[index] = {mint: str(values[index])}
-                df.loc[index, mint] = str(values[index])
+                df.loc[index + 1, mint] = str(values[index])
 
 
         # 保存为.xlsx文件
-        df.to_excel('output.xlsx')
+        df.to_excel(f'output/excel/{account.address}.xlsx')
 
 
 

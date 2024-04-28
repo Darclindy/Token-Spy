@@ -1,19 +1,27 @@
 import transaction.enums as enums
 from transaction.tools import *
 from transaction.enums import *
+from utils.date import convert_timestamp_to_utc
+from sdk.helius.Metadata import get_token_symbol, get_token_name
+from sdk.cmc.crypto_currency.HistoryCurrencyPresenter import fetch_price
+from utils.metadata.SymbolCache import SYMBOL_CACHE
+from utils.metadata.Format import remove_non_english_chars
+
 
 class TransactionModel:
     def __init__(self, account, price, count, action, timestamp, fee = 0, description = "", signature = "", mint = ""):
         self.account = account
-        self.price = price
+        self.price = 1
         self.count = count
         self.action = action
         self.timestamp = timestamp
+        self.utc_timestamp = convert_timestamp_to_utc(timestamp)
         self.value = price  * count
         self.fee = fee
         self.signature = signature
         self.description = description
         self.mint = mint
+        self.symbol = "UNKOWN"
 
     @staticmethod
     def parse_transfers(origin_transactions, account) -> 'list':
@@ -48,12 +56,33 @@ class TransactionModel:
 
         return result
     
+    def init_metadata(self):
+        self.__fetch_token_name()
+        self.__fetch_token_price()
+
+    def __fetch_token_name(self):
+        if (SYMBOL_CACHE.contains(self.mint)):
+            self.symbol = SYMBOL_CACHE.get(self.mint)
+        else:
+            symbol_respose = get_token_symbol(self.mint)
+            self.symbol = remove_non_english_chars(symbol_respose)
+            SYMBOL_CACHE.add_symbol(self.mint, self.symbol)
+            print("symbol =", self.symbol)
+
+
+    def __fetch_token_price(self):
+        self.price = fetch_price(self.symbol, self.utc_timestamp)
+
+
+
+
+    
     def to_dict(self):
         return {
             "price": self.price,
             "count": self.count,
             "action": self.action.name,
-            "timestamp": self.timestamp,
+            "timestamp": self.utc_timestamp,
             "fee": self.fee,
             "mint": self.mint,
             "signature": self.signature,
@@ -86,7 +115,9 @@ class TransactionModel:
         for item in origin_data:
             count = item["nativeBalanceChange"]
             action = Action.TRANSFER_IN if (count > 0)  else Action.TRANSFER_OUT
-            result.append(generate_model_func(count, action))
+            model = generate_model_func(count, action)
+            # model.init_metadata()
+            result.append(model)
         return result
 
     @staticmethod
@@ -98,13 +129,13 @@ class TransactionModel:
                 token_amount = raw_token_amount["tokenAmount"]
                 decimals = raw_token_amount["decimals"]
                 amount = get_actual_amount(token_amount, decimals)
-
-                result.append(generate_model_func(
+                model = generate_model_func(
                     amount,
                     Action.TRANSFER_IN if (amount > 0) else Action.TRANSFER_OUT,
                     token_balance_change["mint"]
-                ))
-            
+                )
+                # model.init_metadata()
+                result.append(model)         
         return result
 
     
