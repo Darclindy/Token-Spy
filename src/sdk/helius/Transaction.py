@@ -16,20 +16,20 @@ def transaction_test():
     print(raw_transactions)
     return raw_transactions
 
-def transaction_history_test(address):
-    parsed_transaction_history = TransactionsAPI.get_parsed_transaction_history(address=address, type=transaction_type.values())
-    write_to_file(f"json/history/{address}.json", json.dumps(parsed_transaction_history))
+def transaction_history_test(address) -> list:
+    parsed_transaction_history = TransactionsAPI.get_parsed_transaction_history(address=address)
+    write_to_file(f"json/history/{address}-4.json", json.dumps(parsed_transaction_history))
     # print(parsed_transaction_history)
     return parsed_transaction_history
 
 
-def get_all_transaction(address, signature = None, type = transaction_type.values()):
+def get_all_transaction(address, signature = None) -> list:
     # last_signature = "PToU9AtpEJiduqZXEPjGqP9LWkinCkwokEusBppz7ZUPjHU2rbKuo2QW7wfzkh8Js2agAv25buSz3qS1ussQxdp"
     last_signature = signature
     transactions = []
-    for j in range(10):
+    for j in range(3):
         try:
-            parsed_transaction = TransactionsAPI.get_parsed_transaction_history(address=address, before=last_signature, type=type)
+            parsed_transaction = TransactionsAPI.get_parsed_transaction_history(address=address, before=last_signature)
             size = len(parsed_transaction)
             last_signature = parsed_transaction[size-1]["signature"]
             transactions.extend(parsed_transaction)

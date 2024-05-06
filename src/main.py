@@ -7,6 +7,7 @@ from transaction.Account import Account
 from utils.excel.ExcelExporter import ExcelExporter
 import Constant
 import json
+import numpy as np
 
 
 
@@ -19,15 +20,19 @@ def main():
     print(result)
 
 def test_transaction():
+    np.set_printoptions(formatter={"float": ':0.8f'.format})
+
     signature = ["xof911A5xUMteYD4ibJrGJe29iMMyRS2LJABUvCrrwVRsFZmtH9iWyDWpDodtojNyrqY8bioX86oQ1Z7Dp8i9HK"]
-    address = "5tzFkiKscXHK5ZXCGbXZxdw7gTjjD1mBwuoFbhUvuAi9"
-    # transaction = get_all_transaction(address = address)
-    transaction = transaction_history_test(address = address)
+    # address = "5tzFkiKscXHK5ZXCGbXZxdw7gTjjD1mBwuoFbhUvuAi9"
+    address = "Ew4uNiPvSDN2ioV1xbgjCVrAzVVM8873U1n3ZYwC5739"
+    transaction = get_all_transaction(address = address)
+    # transaction = transaction_history_test(address = address)
     model = TransactionModel.parse_transfers(transaction, address)
 
     account = Account(address)
     account.add_model_list(model)
     ExcelExporter.export_account(account)
+    account.write_to_json()
 
     print(account)
     
@@ -47,18 +52,19 @@ def test_dune():
 
 
 def test_cmc():
-    print(fetch_price("ETH", "2024-04-15T07:33:33.000Z"))
-    # result = CRYPTO_CURRENCY_API.quotes_historical(params={
-    #     "symbol":"ETH",            
-    #     "time_end":"2024-04-15T07:33:33.000Z",
-    #     "count":2,
-    #     "interval":"5m",
-    #     })
+    # print(fetch_price("ETH", "2024-04-15T07:33:33.000Z"))
+    result = CRYPTO_CURRENCY_API.quotes_historical(params={
+        "symbol":"ETH,BTC,SOL,CSV,BCH,BOME,SLERF",            
+        # "time_end":"2024-04-15T07:33:33.000Z",
+        "count":1000,
+        "interval":"5m",
+        "aux":"price"
+        })
     
-    # write_to_file(f"json/price/eth.json", json.dumps(result))
+    write_to_file(f"json/price/multi_coin_price.json", json.dumps(result))
 
 def test_helius():
-    transaction_history_test(address = "F82BqR5GqmVkc1X58WsnEPeTqVAvgk3tAavtmpoiw7PM")
+    transaction_history_test(address = "Ew4uNiPvSDN2ioV1xbgjCVrAzVVM8873U1n3ZYwC5739")
     # transaction_test()
 
 

@@ -1,11 +1,12 @@
 import transaction.enums as enums
 from transaction.tools import *
 from transaction.enums import *
-from utils.date import convert_timestamp_to_utc
+from utils.date import convert_timestamp_to_utc, round_down_timestamp_to_nearest_five_minutes
 from sdk.helius.Metadata import get_token_symbol, get_token_name
 from sdk.cmc.crypto_currency.HistoryCurrencyPresenter import fetch_price
 from utils.metadata.SymbolCache import SYMBOL_CACHE
 from utils.metadata.Format import remove_non_english_chars
+import price.PriceCache as price_cache
 
 
 class TransactionModel:
@@ -15,7 +16,7 @@ class TransactionModel:
         self.count = count
         self.action = action
         self.timestamp = timestamp
-        self.utc_timestamp = convert_timestamp_to_utc(timestamp)
+        self.utc_timestamp = convert_timestamp_to_utc(round_down_timestamp_to_nearest_five_minutes(timestamp))
         self.value = price  * count
         self.fee = fee
         self.signature = signature
@@ -44,11 +45,11 @@ class TransactionModel:
         
         solana_transfer = TransactionModel.__parse_solana_transfers(
             native_account,
-            lambda count, action: TransactionModel(account ,0, count, action, origin_transaction["timestamp"], description=origin_transaction["description"], fee=origin_transaction["fee"], signature=origin_transaction["signature"], mint = "SOLANA")
+            lambda count: TransactionModel(account ,0, count, origin_transaction['type'], origin_transaction["timestamp"], description=origin_transaction["description"], fee=origin_transaction["fee"], signature=origin_transaction["signature"], mint = "SOLANA")
         )
         spl_transfer = TransactionModel.__parse_spl_token_transfers(
             spl_account, 
-            lambda count, action, mint : TransactionModel(account, 0, count, action, origin_transaction["timestamp"], description=origin_transaction["description"], fee=origin_transaction["fee"], signature=origin_transaction["signature"], mint = mint)
+            lambda count, mint : TransactionModel(account, 0, count, origin_transaction['type'], origin_transaction["timestamp"], description=origin_transaction["description"], fee=origin_transaction["fee"], signature=origin_transaction["signature"], mint = mint)
         )
 
         result.extend(solana_transfer)
@@ -71,17 +72,16 @@ class TransactionModel:
 
 
     def __fetch_token_price(self):
-        self.price = fetch_price(self.symbol, self.utc_timestamp)
-
-
+        self.price = price_cache.get_price(self.symbol, self.utc_timestamp)
+        print(f"fetch token price: {self.symbol} -> {self.price}")
 
 
     
     def to_dict(self):
         return {
-            "price": self.price,
-            "count": self.count,
-            "action": self.action.name,
+            "price": f"{self.price:.8f}",
+            "count": f"{self.count:.8f}",
+            "action": self.action,
             "timestamp": self.utc_timestamp,
             "fee": self.fee,
             "mint": self.mint,
@@ -94,7 +94,7 @@ class TransactionModel:
     def __filter_by_native_account(data, account):
         result = []
         for item in data:
-            if item['account'] == account:
+            if (item['account'] == account and item['nativeBalanceChange'] != 0):
                 result.append(item)
         return result
     
@@ -113,10 +113,9 @@ class TransactionModel:
     def __parse_solana_transfers(origin_data, generate_model_func) -> 'list':
         result = []
         for item in origin_data:
-            count = item["nativeBalanceChange"]
-            action = Action.TRANSFER_IN if (count > 0)  else Action.TRANSFER_OUT
-            model = generate_model_func(count, action)
-            # model.init_metadata()
+            count = item["nativeBalanceChange"] / (10 ** 9)
+            model = generate_model_func(count)
+            model.init_metadata()
             result.append(model)
         return result
 
@@ -129,13 +128,12 @@ class TransactionModel:
                 token_amount = raw_token_amount["tokenAmount"]
                 decimals = raw_token_amount["decimals"]
                 amount = get_actual_amount(token_amount, decimals)
-                model = generate_model_func(
+                model: TransactionModel = generate_model_func(
                     amount,
-                    Action.TRANSFER_IN if (amount > 0) else Action.TRANSFER_OUT,
                     token_balance_change["mint"]
                 )
-                # model.init_metadata()
-                result.append(model)         
+                model.init_metadata()
+                result.append(model)
         return result
 
     

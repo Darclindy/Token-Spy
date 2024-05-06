@@ -3,7 +3,7 @@ from transaction.Account import Account
 from sdk.helius.Metadata import get_token_symbols
 from utils.out import write_to_file
 import json
-import numpy as np
+import os
 
 class ExcelExporter:
 
@@ -17,8 +17,9 @@ class ExcelExporter:
                 if token not in data_dict:
                     data_dict[token] = []
                 data_dict[token].append(model['price'])
-                data_dict[token].append(model['count'],)
+                data_dict[token].append(model['count'])
                 data_dict[token].append(model['action'])
+                data_dict[token].append(f"{model['action']} {float(model['price']) * float(model['count'])}")
                 data_dict[token].append(model['timestamp'])
 
         write_to_file("test.json" ,json.dumps(data_dict))
@@ -44,9 +45,16 @@ class ExcelExporter:
             for index in range(len(values)):
                 df.loc[index + 1, mint] = str(values[index])
 
+        final_path = f'output/excel/{account.address}.xlsx'
+        # 获取文件所在的目录
+        directory = os.path.dirname(final_path)
+
+        # 如果目录不存在，则创建它
+        if not os.path.exists(directory):
+            os.makedirs(directory)
 
         # 保存为.xlsx文件
-        df.to_excel(f'output/excel/{account.address}.xlsx')
+        df.to_excel(final_path)
 
 
 

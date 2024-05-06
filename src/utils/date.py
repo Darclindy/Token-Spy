@@ -19,7 +19,7 @@ def round_down_timestamp_to_nearest_five_minutes(timestamp):
     rounded_dt = dt.replace(minute=minutes, second=0)
 
     # 将结果转回时间戳
-    return rounded_dt.timestamp()
+    return int(rounded_dt.timestamp())
 
 if __name__ == "__main__":
     timestamp = 1529693377  # 示例的时间戳
