@@ -18,10 +18,11 @@ setup(
     entry_points={
         'console_scripts': [
             'token-spy-test=main:test',
-            'token-spy=main:main',
             'test-dune=main:test_dune',
             "test-cmc=main:test_cmc",
-            "test-helius=main:test_helius"
+            "test-helius=main:test_helius",
+            'analyse=main:address_analysis',
+            'profit=main:profit_calculation',
         ],
     },
     # 其他元数据

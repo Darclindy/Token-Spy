@@ -8,6 +8,8 @@ from utils.excel.ExcelExporter import ExcelExporter
 import Constant
 import json
 import numpy as np
+import argparse
+
 
 
 
@@ -38,7 +40,6 @@ def test_transaction():
     
     # account.write_to_excel()
 
-
 def test():
     print("hello token-spy, this is a setup test!!!")
     # get_all_transaction("F82BqR5GqmVkc1X58WsnEPeTqVAvgk3tAavtmpoiw7PM")
@@ -66,6 +67,36 @@ def test_cmc():
 def test_helius():
     transaction_history_test(address = "Ew4uNiPvSDN2ioV1xbgjCVrAzVVM8873U1n3ZYwC5739")
     # transaction_test()
+
+def address_analysis():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("address", help="target account's address")
+    parser.add_argument("-a", "--action", help="transaction type", choices=["transfer", "swap"], metavar="")
+    parser.add_argument("-d", "--duration", help="time duration", choices=['1d', '2d', '3d', '7d', '14d', '1m', '2m', '3m', '6m', '1y'], metavar="")
+    parser.add_argument("-ss", help="start signature")
+    parser.add_argument("-es", help="end signature")
+
+    args = parser.parse_args()
+
+    address = args.address
+
+    transaction = get_all_transaction(address = address)
+    model = TransactionModel.parse_transfers(transaction, address)
+
+    account = Account(address)
+    account.add_model_list(model)
+    ExcelExporter.export_account(account)
+    account.write_to_json()
+    print(account)
+
+
+def profit_calculation():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("address", help="target account's address")
+    parser.add_argument("-a", "--action", help="transaction type", choices=["transfer", "swap"], metavar="")
+    parser.add_argument("-p", "--path", help="transaction account path")
+
+    print("profit_calculation function is comming soon..")
 
 
 
